@@ -1,17 +1,13 @@
 from kivymd.app import MDApp
-from kivymd.uix.navigationbar import MDNavigationBar, MDNavigationItem
 from kivy.uix.screenmanager import SlideTransition, NoTransition
 from kivy.properties import StringProperty
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.core.window import Window
+from kivy.clock import Clock
 
 Window.size = (350, 600)
 
-class NavigationItemBar(MDNavigationItem):
-    icon = StringProperty()
-    text = StringProperty()
-    
 class BaseScreen(MDScreen):
     pass
 
@@ -29,6 +25,11 @@ class Settings(MDScreen):
 
 class MainApp(MDApp):
     root: MDBoxLayout | None = None
+    current_active = StringProperty("Add Menu")
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.theme_cls.primary_palette = 'Red'
     
     def on_start(self):
         if self.root:
@@ -37,33 +38,29 @@ class MainApp(MDApp):
                 screen_manager.current = 'Add Menu'
             else:
                 print(f"[ERROR]: Screen manager dengan id {screen_manager} tidak ditemukan.")
-
-    def on_switch_tabs(
-        self,
-        bar: MDNavigationBar,
-        item: MDNavigationItem,
-        item_icon: str,
-        item_text: str,
-    ):
+                
+    def switch_screen(self, screen_name):
         if not self.root:
             return
-
+            
+        self.current_active = screen_name
         screen_manager = self.root.ids.get('screen_manager')
+        
         if screen_manager:
-            if screen_manager.current == item_text:
+            if screen_manager.current == screen_name:
                 return
+                
             try:
                 current_screen_name = screen_manager.current
                 screen_names_list = screen_manager.screen_names
                 
                 if not current_screen_name or current_screen_name not in screen_names_list:
-                    print(f"[WARNING]: Layar saat ini '{current_screen_name}' tidak ditemukan.")
                     screen_manager.transition = SlideTransition(direction='left')
-                    screen_manager.current = item_text
+                    screen_manager.current = screen_name
                     return
                 
                 current_idx = screen_names_list.index(current_screen_name)
-                target_idx = screen_names_list.index(item_text)
+                target_idx = screen_names_list.index(screen_name)
                 
                 direction = ''
                 if target_idx > current_idx:
@@ -72,25 +69,21 @@ class MainApp(MDApp):
                     direction = 'right'
                 else:
                     screen_manager.transition = NoTransition()
-                    screen_manager.current = item_text
+                    screen_manager.current = screen_name
                     return
                 
                 screen_manager.transition = SlideTransition(direction=direction, duration=0.2)
-                screen_manager.current = item_text
-
-            except ValueError:
-                print(f"[ERROR]: ValueError saat transisi: Current='{screen_manager.current}', Target='{item_text}'. Menggunakan NoTransition.")
-                screen_manager.transition = NoTransition()
-                screen_manager.current = item_text
+                screen_manager.current = screen_name
 
             except Exception as e:
-                print(f"[ERROR]: Terjadi kesalahan tak terduga: {e}. Menggunakan NoTransition.")
+                print(f"[ERROR]: {e}. Menggunakan NoTransition.")
                 screen_manager.transition = NoTransition()
-                screen_manager.current = item_text
+                screen_manager.current = screen_name
         else:
             print(f"[ERROR]: Screen manager dengan id 'screen_manager' tidak ditemukan.")
     
     def build(self):
+        self.theme_cls.theme_style = "Dark"  # Ensure light theme
         return super().build()
 
 if __name__ == '__main__':
