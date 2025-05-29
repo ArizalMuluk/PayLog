@@ -1,3 +1,5 @@
+# Support di kivymd 2.1.0.dev0 doang kocak
+
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 

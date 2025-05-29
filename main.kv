@@ -1,7 +1,7 @@
 #:import NoTransition kivy.uix.screenmanager.NoTransition
 #:import SlideTransition kivy.uix.screenmanager.SlideTransition
 
-#:kivy 2.3.1
+#:kivy 2.1.0
 
 <BaseScreen>:
     MDLabel:
@@ -10,7 +10,7 @@
 
 MDBoxLayout:
     orientation: 'vertical'
-    md_bg_color: self.theme_cls.backgroundColor
+    md_bg_color: app.theme_cls.bg_dark
 
     MDScreenManager:
         id: screen_manager
@@ -28,72 +28,118 @@ MDBoxLayout:
         BaseScreen:
             name: 'Settings'
 
-    # Container navigasi bar kustom
     BoxLayout:
         size_hint_y: None
         height: "60dp"
-        padding: [30, 5, 30, 10]
-        
-        # Navigasi bar
+        padding: [20, 5, 20, 10] 
+
         MDCard:
-            md_bg_color: 0.78, 0.18, 0.18, 1
+            md_bg_color: app.theme_cls.primary_color 
             radius: [30, 30, 30, 30]
             elevation: 4
             padding: 0
             
-            # BoxLayout untuk distribusi ikon
             BoxLayout:
                 orientation: 'horizontal'
-                padding: [0, 0, 0, 0] 
-                
-                # Icon Cart
-                MDIconButton:
-                    icon: "cart"
-                    theme_icon_color: "Custom"
-                    icon_color: 1, 1, 1, 1
-                    icon_size: "24dp"
-                    ripple_scale: 0
-                    on_release: app.switch_screen('Cart')
-                    md_bg_color: [0.9, 0.3, 0.3, 1] if app.current_active == 'Cart' else [0.78, 0.18, 0.18, 1]
-                    radius: [20] if app.current_active == 'Cart' else [0]
-                    size_hint_x: 1 
-                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-                
-                # Icon Add Menu
-                MDIconButton:
-                    icon: "plus-box"
-                    theme_icon_color: "Custom"
-                    icon_color: 1, 1, 1, 1
-                    icon_size: "24dp"
-                    ripple_scale: 0
-                    on_release: app.switch_screen('Add Menu')
-                    md_bg_color: [0.9, 0.3, 0.3, 1] if app.current_active == 'Add Menu' else [0.78, 0.18, 0.18, 1]
-                    radius: [20] if app.current_active == 'Add Menu' else [0]
-                    size_hint_x: 1  
-                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-                
-                # Icon History
-                MDIconButton:
-                    icon: "history"
-                    theme_icon_color: "Custom"
-                    icon_color: 1, 1, 1, 1
-                    icon_size: "24dp"
-                    ripple_scale: 0
-                    on_release: app.switch_screen('History')
-                    md_bg_color: [0.9, 0.3, 0.3, 1] if app.current_active == 'History' else [0.78, 0.18, 0.18, 1]
-                    radius: [20] if app.current_active == 'History' else [0]
-                    size_hint_x: 1 
-                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-                
-                # Icon Settings
-                MDIconButton:
-                    icon: "cog"
-                    theme_icon_color: "Custom"
-                    icon_color: 1, 1, 1, 1
-                    icon_size: "24dp"
-                    ripple_scale: 0
-                    on_release: app.switch_screen('Settings')
-                    md_bg_color: [0.9, 0.3, 0.3, 1] if app.current_active == 'Settings' else [0.78, 0.18, 0.18, 1]
-                    radius: [20] if app.current_active == 'Settings' else [0]
-                    size_hint_x: 1 
-                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+                padding: [dp(5), 0, dp(5), 0] 
+                spacing: dp(8)
+
+                # Cart
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 1
+                    spacing: dp(2) 
+                    MDCard: 
+                        size_hint_y: None
+                        height: "2dp"
+                        size_hint_x: None
+                        width: dp(24)
+                        md_bg_color: 1, 1, 1, 1 
+                        opacity: 1 if app.current_active == 'Cart' else 0
+                        radius: [dp(1.5)]
+                        pos_hint: {'center_x': 0.5}
+                        elevation: 0
+                    MDIconButton:
+                        icon: "cart" if app.current_active == 'Cart' else "cart-outline"
+                        theme_icon_color: "Custom"
+                        icon_color: 1, 1, 1, 1
+                        icon_size: "26dp" if app.current_active == 'Cart' else "24dp"
+                        ripple_scale: 0
+                        on_release: app.switch_screen('Cart')
+                        md_bg_color: 0, 0, 0, 0
+                        pos_hint: {'center_x': 0.5}
+
+                # Add Menu
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 1
+                    spacing: dp(2)
+                    MDCard: 
+                        size_hint_y: None
+                        height: "2dp" 
+                        size_hint_x: None
+                        width: dp(24)
+                        md_bg_color: 1, 1, 1, 1 
+                        opacity: 1 if app.current_active == 'Add Menu' else 0
+                        radius: [dp(1)] 
+                        pos_hint: {'center_x': 0.5}
+                        elevation: 0
+                    MDIconButton:
+                        icon: "plus-box" if app.current_active == 'Add Menu' else "plus-box-outline"
+                        theme_icon_color: "Custom"
+                        icon_color: 1, 1, 1, 1
+                        icon_size: "26dp" if app.current_active == 'Add Menu' else "24dp"
+                        ripple_scale: 0
+                        on_release: app.switch_screen('Add Menu')
+                        md_bg_color: 0, 0, 0, 0
+                        pos_hint: {'center_x': 0.5}
+
+                # History
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 1
+                    spacing: dp(2)
+                    MDCard: 
+                        size_hint_y: None
+                        height: "2dp"
+                        size_hint_x: None
+                        width: dp(24)
+                        md_bg_color: 1, 1, 1, 1
+                        opacity: 1 if app.current_active == 'History' else 0
+                        radius: [dp(1)]
+                        pos_hint: {'center_x': 0.5}
+                        elevation: 0
+                    MDIconButton:
+                        icon: "clock" if app.current_active == 'History' else "clock-outline"
+                        theme_icon_color: "Custom"
+                        icon_color: 1, 1, 1, 1
+                        icon_size: "26dp" if app.current_active == 'History' else "24dp"
+                        ripple_scale: 0
+                        on_release: app.switch_screen('History')
+                        md_bg_color: 0, 0, 0, 0
+                        pos_hint: {'center_x': 0.5}
+
+                # Settings
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_x: 1
+                    spacing: dp(2)
+                    MDCard: 
+                        size_hint_y: None
+                        height: "2dp"
+                        size_hint_x: None
+                        width: dp(24)
+                        md_bg_color: 1, 1, 1, 1 
+                        opacity: 1 if app.current_active == 'Settings' else 0
+                        radius: [dp(1.5)]
+                        pos_hint: {'center_x': 0.5}
+                        elevation: 0
+                    MDIconButton:
+                        icon: "cog" if app.current_active == 'Settings' else "cog-outline"
+                        theme_icon_color: "Custom"
+                        icon_color: 1, 1, 1, 1
+                        icon_size: "26dp" if app.current_active == 'Settings' else "24dp"
+                        ripple_scale: 0
+                        on_release: app.switch_screen('Settings')
+                        md_bg_color: 0, 0, 0, 0
+                        pos_hint: {'center_x': 0.5}

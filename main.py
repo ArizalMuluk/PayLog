@@ -4,7 +4,6 @@ from kivy.properties import StringProperty
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.core.window import Window
-from kivy.clock import Clock
 
 Window.size = (350, 600)
 
@@ -83,7 +82,7 @@ class MainApp(MDApp):
             print(f"[ERROR]: Screen manager dengan id 'screen_manager' tidak ditemukan.")
     
     def build(self):
-        self.theme_cls.theme_style = "Dark"  # Ensure light theme
+        self.theme_cls.theme_style = "Light"  # Ensure light theme
         return super().build()
 
 if __name__ == '__main__':
