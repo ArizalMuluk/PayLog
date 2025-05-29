@@ -4,6 +4,7 @@ from kivy.properties import StringProperty
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.core.window import Window
+from kivymd.uix.list import OneLineListItem
 
 Window.size = (350, 600)
 
@@ -14,7 +15,26 @@ class Cart(MDScreen):
     pass
 
 class AddMenu(MDScreen):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.all_menu_items = ["Wonton Goreng", "Wonton Kuah", "Mie Judes", "Wonton Pangsit"]
+
+    def search_items(self, query):
+        if not self.ids:
+            return
+
+        result_list = self.ids.search_result_list
+        result_list.clear_widgets()
+
+        if not query:
+            return
+        
+        for item in self.all_menu_items:
+            if query.lower() in item.lower():
+                result_list.add_widget(OneLineListItem(text=item))
+
+    def filter_items(self):
+        pass
 
 class History(MDScreen):
     pass
