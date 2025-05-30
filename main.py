@@ -51,7 +51,7 @@ class AddItemDialogContent(MDBoxLayout):
         self.orientation = "vertical"
         self.spacing = dp(12)
         self.size_hint_y = None
-        self.height = dp(300) 
+        self.height = dp(200) 
         self.padding = dp(10)
 
         self.name_field = MDTextField(hint_text="Nama Menu", mode="fill", required=True)
@@ -92,7 +92,7 @@ class AddItemDialogContent(MDBoxLayout):
         self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
-            preview=True, # Aktifkan preview gambar
+            preview=True,
             ext=['.png', '.jpg', '.jpeg', '.gif', '.bmp']
         )
         self.file_manager.show(path)
