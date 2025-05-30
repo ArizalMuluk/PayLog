@@ -58,10 +58,10 @@ class AddItemDialogContent(MDBoxLayout):
         
         image_input_layout = MDBoxLayout(orientation='horizontal', adaptive_height=True, spacing=dp(10))
         self.image_path_display = MDTextField(
-            hint_text="Path Gambar", 
+            hint_text="Pilih Gambar Menu", 
             mode="fill", 
             readonly=True, 
-            helper_text="Klik ikon folder untuk memilih gambar",
+            # helper_text="Klik ikon folder untuk memilih gambar",
             helper_text_mode = "on_focus"
         )
         self.browse_button = MDIconButton(
