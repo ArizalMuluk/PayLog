@@ -9,21 +9,61 @@
         text: root.name
         halign: 'center'
 
+<MenuCard@MDCard>:
+    name: ""
+    image_path: ""
+    price: 0
+    actual_image_source: ""
+
+    orientation: "vertical"
+    spacing: dp(0) 
+    padding: dp(0) 
+    size_hint_y: None
+    height: self.minimum_height
+    elevation: 2 
+    radius: [dp(15), dp(15), dp(15), dp(15)] 
+
+    FitImage:
+        source: root.actual_image_source
+        size_hint_y: None
+        height: dp(100)
+        radius: [dp(15), dp(15), dp(0), dp(0)] 
+        allow_stretch: False
+        keep_ratio: True
+        mipmap: True
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        size_hint_y: None 
+        height: self.minimum_height 
+        padding: [dp(10), dp(4), dp(10), dp(10)] 
+        spacing: dp(4) 
+
+        MDLabel:
+            text: root.name
+            halign: "center" 
+            theme_text_color: "Primary"
+            font_style: "Subtitle1" 
+            bold: True
+            adaptive_height: True
+
+        MDLabel:
+            text: f"Rp {root.price:,.0f}".replace(",", ".")
+            halign: "center" 
+            theme_text_color: "Secondary"
+            font_style: "Body1" 
+            adaptive_height: True
+
 <AddMenu>:
     name: 'Add Menu'
     MDBoxLayout:
         orientation: 'vertical'
-        padding: dp(15)
 
         MDBoxLayout:
             orientation: 'horizontal'
             adaptive_height: True
-            padding: dp(5)
+            padding: [dp(12), dp(10), dp(12), dp(10)]
             spacing: dp(10)
-            radius: [dp(12)]
-            md_bg_color: 1, 1, 1, 1
-            elevation: 2
-
             MDTextField:
                 id: search_field
                 hint_text: "Search Item"
@@ -32,30 +72,28 @@
                 on_text: root.search_items(self.text)
                 size_hint_y: None
                 height: dp(48)
-                padding_x: dp(15)
                 text_color_normal: 0, 0, 0, 1
                 hint_text_color_normal: .5, .5, .5, 1
                 size_hint_x: 1
                 icon_left: "magnify"
 
-            MDCard:
-                size_hint_x: None
-                width: dp(48)
-                size_hint_y: None
-                height: dp(48)
-                md_bg_color: [1, 0, 0, 1]
-                radius: [dp(10), dp(10), dp(10), dp(10)]
-                padding: dp(0)
-                elevation: 0
+            MDIconButton:
+                icon: "plus-circle-outline"
+                on_release: root.open_add_item_dialog()
+                pos_hint: {"center_y": .5}
+                user_font_size: "30sp"
+                theme_text_color: "Custom"
+                text_color: app.theme_cls.primary_color
 
-                MDIconButton:
-                    icon: "menu"
-                    theme_icon_color: "Custom"
-                    text_color: [1, 1, 1, 1]
-                    pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         ScrollView:
-            MDList:
+            GridLayout:
                 id: search_result_list
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
+                padding: dp(10)
+                spacing: dp(10)
+
 
 MDBoxLayout:
     orientation: 'vertical'
@@ -79,7 +117,7 @@ MDBoxLayout:
     BoxLayout:
         size_hint_y: None
         height: "60dp"
-        padding: [20, 5, 20, 10] 
+        padding: [dp(20), dp(5), dp(20), dp(10)] 
 
         MDCard:
             md_bg_color: app.theme_cls.primary_color 
