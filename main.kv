@@ -1,6 +1,7 @@
 #:import NoTransition kivy.uix.screenmanager.NoTransition
 #:import SlideTransition kivy.uix.screenmanager.SlideTransition
 #:import dp kivy.metrics.dp
+#:import MDSeparator kivymd.uix.card.MDSeparator
 
 #:kivy 2.1.0
 
@@ -16,43 +17,99 @@
     actual_image_source: ""
 
     orientation: "vertical"
-    spacing: dp(0) 
-    padding: dp(0) 
+    spacing: dp(0)
+    padding: dp(0)
     size_hint_y: None
     height: self.minimum_height
-    elevation: 2 
-    radius: [dp(15), dp(15), dp(15), dp(15)] 
+    elevation: 2
+    radius: [dp(15), dp(15), dp(15), dp(15)]
 
     FitImage:
+        id: product_image_in_card
         source: root.actual_image_source
         size_hint_y: None
         height: dp(100)
-        radius: [dp(15), dp(15), dp(0), dp(0)] 
+        radius: [dp(15), dp(15), dp(0), dp(0)]
         allow_stretch: False
         keep_ratio: True
         mipmap: True
 
     MDBoxLayout:
         orientation: 'vertical'
-        size_hint_y: None 
-        height: self.minimum_height 
-        padding: [dp(10), dp(4), dp(10), dp(10)] 
-        spacing: dp(4) 
+        size_hint_y: None
+        height: self.minimum_height
+        padding: [dp(10), dp(4), dp(10), dp(10)]
+        spacing: dp(4)
 
         MDLabel:
             text: root.name
-            halign: "center" 
+            halign: "center"
             theme_text_color: "Primary"
-            font_style: "Subtitle1" 
+            font_style: "Subtitle1"
             bold: True
             adaptive_height: True
 
-        MDLabel:
-            text: f"Rp {root.price:,.0f}".replace(",", ".")
-            halign: "center" 
-            theme_text_color: "Secondary"
-            font_style: "Body1" 
+        MDBoxLayout:
+            orientation: 'horizontal'
             adaptive_height: True
+            MDLabel:
+                text: f"Rp {root.price:,.0f}".replace(",", ".")
+                halign: "left"
+                theme_text_color: "Secondary"
+                font_style: "Body1"
+                adaptive_height: True
+                size_hint_x: 0.75
+                pos_hint: {"center_y": .5}
+            MDIconButton:
+                icon: "plus-circle"
+                on_release: root.add_item_to_cart()
+                theme_text_color: "Custom"
+                text_color: app.theme_cls.primary_color
+                pos_hint: {"center_y": .5}
+                user_font_size: "24sp"
+
+<CartListItem>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    adaptive_height: True
+    spacing: dp(10)
+    padding: dp(8)
+
+<Cart>:
+    name: 'Cart'
+    MDBoxLayout:
+        orientation: 'vertical'
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(56)
+            padding: dp(10)
+            MDLabel:
+                text: "Keranjang Belanja"
+                halign: 'center'
+                font_style: 'H5'
+                adaptive_height: True
+
+        ScrollView:
+            MDBoxLayout:
+                id: cart_items_list
+                orientation: 'vertical'
+                adaptive_height: True
+                padding: dp(10)
+                spacing: dp(8)
+
+        MDSeparator:
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: dp(60)
+            padding: [dp(15), dp(10), dp(15), dp(10)]
+            MDLabel:
+                id: total_price_label
+                text: "Total: Rp 0"
+                halign: 'right'
+                font_style: 'H6'
+                adaptive_height: True
 
 <AddMenu>:
     name: 'Add Menu'
@@ -94,7 +151,6 @@
                 padding: dp(10)
                 spacing: dp(10)
 
-
 MDBoxLayout:
     orientation: 'vertical'
     md_bg_color: app.theme_cls.bg_light
@@ -102,49 +158,48 @@ MDBoxLayout:
     MDScreenManager:
         id: screen_manager
         transition: NoTransition()
+        current: 'Add Menu'
 
-        BaseScreen:
-            name: 'Cart'
-
+        Cart:
         AddMenu:
-
         BaseScreen:
             name: 'History'
-
         BaseScreen:
             name: 'Settings'
 
     BoxLayout:
+        id: bottom_nav_container
         size_hint_y: None
         height: "60dp"
-        padding: [dp(20), dp(5), dp(20), dp(10)] 
+        padding: [dp(20), dp(5), dp(20), dp(10)]
 
         MDCard:
-            md_bg_color: app.theme_cls.primary_color 
+            md_bg_color: app.theme_cls.primary_color
             radius: [30, 30, 30, 30]
             elevation: 4
             padding: 0
-            
+
             BoxLayout:
                 orientation: 'horizontal'
-                padding: [dp(5), 0, dp(5), 0] 
+                padding: [dp(5), 0, dp(5), 0]
                 spacing: dp(8)
 
                 BoxLayout:
                     orientation: 'vertical'
                     size_hint_x: 1
-                    spacing: dp(2) 
-                    MDCard: 
+                    spacing: dp(2)
+                    MDCard:
                         size_hint_y: None
                         height: "2dp"
                         size_hint_x: None
                         width: dp(24)
-                        md_bg_color: 1, 1, 1, 1 
+                        md_bg_color: 1, 1, 1, 1
                         opacity: 1 if app.current_active == 'Cart' else 0
                         radius: [dp(1.5)]
                         pos_hint: {'center_x': 0.5}
                         elevation: 0
                     MDIconButton:
+                        id: cart_nav_icon_target
                         icon: "cart" if app.current_active == 'Cart' else "cart-outline"
                         theme_icon_color: "Custom"
                         icon_color: 1, 1, 1, 1
@@ -158,14 +213,14 @@ MDBoxLayout:
                     orientation: 'vertical'
                     size_hint_x: 1
                     spacing: dp(2)
-                    MDCard: 
+                    MDCard:
                         size_hint_y: None
-                        height: "2dp" 
+                        height: "2dp"
                         size_hint_x: None
                         width: dp(24)
-                        md_bg_color: 1, 1, 1, 1 
+                        md_bg_color: 1, 1, 1, 1
                         opacity: 1 if app.current_active == 'Add Menu' else 0
-                        radius: [dp(1)] 
+                        radius: [dp(1)]
                         pos_hint: {'center_x': 0.5}
                         elevation: 0
                     MDIconButton:
@@ -182,7 +237,7 @@ MDBoxLayout:
                     orientation: 'vertical'
                     size_hint_x: 1
                     spacing: dp(2)
-                    MDCard: 
+                    MDCard:
                         size_hint_y: None
                         height: "2dp"
                         size_hint_x: None
@@ -206,12 +261,12 @@ MDBoxLayout:
                     orientation: 'vertical'
                     size_hint_x: 1
                     spacing: dp(2)
-                    MDCard: 
+                    MDCard:
                         size_hint_y: None
                         height: "2dp"
                         size_hint_x: None
                         width: dp(24)
-                        md_bg_color: 1, 1, 1, 1 
+                        md_bg_color: 1, 1, 1, 1
                         opacity: 1 if app.current_active == 'Settings' else 0
                         radius: [dp(1.5)]
                         pos_hint: {'center_x': 0.5}
