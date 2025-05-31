@@ -274,7 +274,7 @@ class MainApp(MDApp):
                 screen_manager.transition = NoTransition()
                 screen_manager.current = screen_name
         else:
-            print(f"[ERROR]: Screen manager dengan id 'screen_manager' tidak ditemukan.")
+            print(f"[ERROR]: Screen manager dengan id {screen_manager} tidak ditemukan.")
     
     def build(self):
         self.theme_cls.theme_style = "Light"
