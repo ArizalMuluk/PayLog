@@ -1,3 +1,4 @@
+from kivy.uix.recyclegridlayout import defaultdict
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition, NoTransition
 from kivy.properties import StringProperty, NumericProperty
@@ -6,10 +7,11 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.core.window import Window
 from kivy.uix.image import Image as KivyImage
 from kivy.animation import Animation
+from kivy.properties import ListProperty, DictProperty, ObjectProperty, BooleanProperty
 from kivy.metrics import dp
 
 from kivymd.uix.card import MDCard
-from kivymd.uix.fitimage import FitImage
+from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.label import MDLabel
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
@@ -27,70 +29,45 @@ class CartListItem(MDBoxLayout):
     item_name = StringProperty()
     item_price = NumericProperty()
     item_quantity = NumericProperty()
-    item_image_path = StringProperty()
+    actual_item_image_path = StringProperty("atlas://data/images/defaulttheme/transparent") 
 
     def __init__(self, item_data, **kwargs):
         super().__init__(**kwargs)
-        self.orientation = 'horizontal'
-        self.size_hint_y = None
-        self.adaptive_height = True
-        self.spacing = dp(10)
-        self.padding = dp(8)
-
         self.item_name = item_data['name']
         self.item_price = item_data['price']
         self.item_quantity = item_data['quantity']
-        self.item_image_path = item_data.get('image_path', "images/placeholder.png")
 
-        actual_display_image_path = self.item_image_path
-        if not (self.item_image_path and os.path.exists(self.item_image_path)):
-            placeholder = "images/placeholder.png"
-            if os.path.exists(placeholder):
-                actual_display_image_path = placeholder
-            else:
-                actual_display_image_path = ""
+        _image_path = item_data.get('image_path', "images/placeholder.png")
+        placeholder_path = "images/placeholder.png" 
 
-        img = FitImage(
-            source=actual_display_image_path,
-            size_hint=(None, None),
-            size=(dp(56), dp(56)),
-            radius=[dp(4)],
-            mipmap=True
-        )
-        self.add_widget(img)
+        if _image_path and os.path.exists(_image_path):
+            self.actual_item_image_path = _image_path
+        elif os.path.exists(placeholder_path):
+            self.actual_item_image_path = placeholder_path
+        else:
+            self.actual_item_image_path = "atlas://data/images/defaulttheme/image-missing" 
 
-        info_box = MDBoxLayout(orientation='vertical', adaptive_height=True, size_hint_x=0.5, spacing=dp(4))
-        info_box.add_widget(MDLabel(text=self.item_name, font_style="Subtitle1", adaptive_height=True, shorten=True, shorten_from='right'))
-        info_box.add_widget(MDLabel(text=f"Rp {self.item_price:,.0f}".replace(",", "."), theme_text_color="Secondary", adaptive_height=True))
-        self.add_widget(info_box)
-
-        qty_box = MDBoxLayout(orientation='horizontal', adaptive_width=True, size_hint_x=None, spacing=dp(1), pos_hint={'center_y': 0.5})
-        btn_decrement = MDIconButton(icon="minus-circle-outline", on_release=self.decrement_quantity, icon_size="22sp", theme_text_color="Secondary")
-        self.qty_label = MDLabel(text=str(self.item_quantity), halign="center", size_hint_x=None, width=dp(28), adaptive_height=True, theme_text_color="Primary", bold=True)
-        btn_increment = MDIconButton(icon="plus-circle-outline", on_release=self.increment_quantity, icon_size="22sp", theme_text_color="Primary")
-        qty_box.add_widget(btn_decrement)
-        qty_box.add_widget(self.qty_label)
-        qty_box.add_widget(btn_increment)
-        self.add_widget(qty_box)
-
-        subtotal = self.item_price * self.item_quantity
-        self.add_widget(MDLabel(text=f"Rp {subtotal:,.0f}".replace(",", "."), size_hint_x=0.3, halign="right", adaptive_height=True, font_style="Subtitle2", pos_hint={'center_y': 0.5}))
 
     def increment_quantity(self, *args):
         app = MDApp.get_running_app()
         if app:
             app.update_cart_item_quantity(self.item_name, 1)
         else:
-            print(f"[ERROR]: Aplikasi tidak ditemukan.")
+            print(f"[ERROR]: Aplikasi tidak ditemukan (CartListItem).")
 
     def decrement_quantity(self, *args):
         app = MDApp.get_running_app()
         if app:
             app.update_cart_item_quantity(self.item_name, -1)
         else:
-            print(f"[ERROR]: Aplikasi tidak ditemukan.")
+            print(f"[ERROR]: Aplikasi tidak ditemukan (CartListItem).")
 
 class Cart(MDScreen):
+    payment_panel_visible = BooleanProperty(False)
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
     def on_enter(self):
         self.update_cart_display()
 
@@ -108,17 +85,135 @@ class Cart(MDScreen):
                 MDLabel(
                     text="Keranjang Anda kosong.", halign="center",
                     theme_text_color="Secondary", padding_y=dp(20),
-                    font_style="Subtitle1"
+                    font_style="Subtitle1", adaptive_height=True
                 )
             )
+            if self.payment_panel_visible:
+                self.toggle_payment_panel() # Tutup panel
         else:
-            for item_data in cart_items_data:
-                cart_item_view = CartListItem(item_data=item_data)
+            for item_data_dict in cart_items_data:
+                cart_item_view = CartListItem(item_data=item_data_dict)
                 cart_list_widget.add_widget(cart_item_view)
 
         total_price = app.get_cart_total()
-        if hasattr(self, 'ids') and 'total_price_label' in self.ids:
-            self.ids.total_price_label.text = f"Total: Rp {total_price:,.0f}".replace(",", ".")
+        total_items_count = sum(item_d.get('quantity', 0) for item_d in cart_items_data)
+
+        if hasattr(self, 'ids'):
+            if 'total_price_label' in self.ids:
+                self.ids.total_price_label.text = f"Rp{total_price:,.0f}".replace(",", ".")
+            if 'total_items_label' in self.ids:
+                self.ids.total_items_label.text = str(total_items_count)
+            
+            payment_field = self.ids.get('payment_amount_field')
+            if payment_field:
+                payment_field.text = "" 
+            change_label = self.ids.get('change_label')
+            if change_label:
+                change_label.text = "Rp0"
+
+            pay_trigger_button = self.ids.get('pay_trigger_button')
+            if pay_trigger_button:
+                pay_trigger_button.disabled = not cart_items_data
+                from kivymd.icon_definitions import md_icons 
+                if not cart_items_data:
+                    pay_trigger_button.text = f"KERANJANG KOSONG   {md_icons['arrow-up']}"
+                elif self.payment_panel_visible:
+                    pay_trigger_button.text = f"TUTUP PEMBAYARAN   {md_icons['arrow-down']}"
+                else:
+                    pay_trigger_button.text = f"LANJUT KE PEMBAYARAN   {md_icons['arrow-up']}"
+
+    def toggle_payment_panel(self):
+        panel = self.ids.get('payment_details_panel')
+        trigger_button = self.ids.get('pay_trigger_button')
+        
+        if not panel or not trigger_button:
+            return
+
+        duration = 0.3
+        from kivymd.icon_definitions import md_icons
+
+        if self.payment_panel_visible:
+            anim = Animation(height=0, opacity=0, d=duration, t='out_cubic')
+            trigger_button.text = f"LANJUT KE PEMBAYARAN   {md_icons['arrow-up']}"
+        else:
+            target_height = dp(200)
+            anim = Animation(height=target_height, opacity=1, d=duration, t='in_out_cubic')
+            trigger_button.text = f"TUTUP PEMBAYARAN   {md_icons['arrow-down']}"
+        
+        anim.start(panel)
+        self.payment_panel_visible = not self.payment_panel_visible
+
+    def calculate_and_display_change(self):
+        app = MDApp.get_running_app()
+        if not app or not hasattr(self, 'ids'):
+            return
+
+        total_price = app.get_cart_total()
+        payment_amount_field = self.ids.get('payment_amount_field')
+        change_label = self.ids.get('change_label')
+
+        if not (payment_amount_field and change_label):
+            return
+
+        payment_amount_text = payment_amount_field.text
+        if not payment_amount_text:
+            change_label.text = "Rp0"
+            return
+
+        try:
+            payment_amount = float(payment_amount_text)
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = False
+        except ValueError:
+            change_label.text = "Input tidak valid"
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
+            return
+
+        if payment_amount >= total_price:
+            change = payment_amount - total_price
+            change_label.text = f"Rp{change:,.0f}".replace(",", ".")
+        else:
+            change_label.text = "Rp0"
+
+    def process_payment(self):
+        app = MDApp.get_running_app()
+        if not app or not hasattr(self, 'ids'):
+            return
+
+        total_price = app.get_cart_total()
+        payment_amount_field = self.ids.get('payment_amount_field')
+        
+        if not payment_amount_field:
+            return
+
+        payment_amount_text = payment_amount_field.text
+        if not payment_amount_text:
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
+            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Nominal tidak boleh kosong"
+            return
+        
+        try:
+            payment_amount = float(payment_amount_text)
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = False
+            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "" 
+        except ValueError:
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
+            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Input harus angka"
+            return
+
+        if payment_amount < total_price:
+            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
+            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Jumlah pembayaran kurang dari total"
+            return
+        
+        change = payment_amount - total_price
+        print(f"Pembayaran Berhasil! Total: {total_price}, Dibayar: {payment_amount}, Kembalian: {change}")
+
+        if hasattr(app, 'cart_items'): 
+            app.cart_items.clear()
+
+        if self.payment_panel_visible:
+            self.toggle_payment_panel()
+        self.update_cart_display() 
 
 class MenuCard(MDCard):
     name = StringProperty()
@@ -205,8 +300,8 @@ class AddItemDialogContent(MDBoxLayout):
         self.orientation = "vertical"
         self.spacing = dp(12)
         self.size_hint_y = None
-        self.height = self.minimum_height
-        self.padding = [dp(16), dp(12), dp(16), dp(24)]
+        self.adaptive_height = True
+        self.padding = [dp(16), dp(50), dp(16), dp(24)]
 
         self.name_field = MDTextField(hint_text="Nama Menu", mode="fill", required=True)
 
@@ -383,8 +478,218 @@ class AddMenu(MDScreen):
         except Exception as e:
             print(f"Gagal menambahkan item: {e}")
 
+class AddTableDialogContent(MDBoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.spacing = dp(12)
+        self.size_hint_y = None
+        self.adaptive_height = True
+        self.padding = [dp(24), dp(24), dp(24), dp(24)]
+
+        self.table_name_field = MDTextField(
+            hint_text="Nama Meja (e.g., Meja 01)",
+            mode="fill",
+            required=True,
+            helper_text_mode="on_error"
+        )
+        self.add_widget(self.table_name_field)
+
+class TableHistoryListItem(MDBoxLayout):
+    table_data = DictProperty() 
+    history_screen = ObjectProperty() 
+
+    item_name = StringProperty("")
+    item_status = StringProperty("")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(table_data=self._update_text_from_data)
+        if self.table_data:
+            self._update_text_from_data()
+
+    def _update_text_from_data(self, *args):
+        self.item_name = self.table_data.get('name', '')
+        self.item_status = f"Status: {self.table_data.get('status', '')}"
+
+    def show_options_menu(self, button_instance):
+        """Dipanggil dari KV saat tombol MDIconButton ditekan."""
+        if self.history_screen:
+            self.history_screen.open_table_options_menu(self.table_data, button_instance)
+
+
 class History(MDScreen):
-    pass
+    add_table_dialog = None
+    table_options_dropdown = None 
+    tables_data = ListProperty([])
+
+    def on_enter(self):
+        self.tables_data = db_manager.get_all_tables()
+        self.display_tables()
+
+    def display_tables(self):
+        history_list_widget = self.ids.get('history_list')
+        if not history_list_widget:
+            return
+        
+        history_list_widget.clear_widgets()
+
+        if not self.tables_data:
+            history_list_widget.add_widget(
+                MDLabel(
+                    text="Belum ada histori meja.", halign="center",
+                    theme_text_color="Secondary", padding_y=dp(20),
+                    font_style="Subtitle1", adaptive_height=True
+                )
+            )
+        else:
+            for table_info_original in sorted(self.tables_data, key=lambda x: x['name']):
+                table_info = dict(table_info_original) 
+                
+                item = TableHistoryListItem(
+                    table_data=table_info,
+                    history_screen=self
+                )
+                history_list_widget.add_widget(item)
+    
+    def open_table_options_menu(self, table_info_dict, caller_button):
+        table_name = table_info_dict['name']
+        
+        menu_items = [
+            {
+                "text": "Sudah Bayar",
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x="Sudah Bayar": self.set_table_status(table_name, x),
+            },
+            {
+                "text": "Belum Bayar",
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x="Belum Bayar": self.set_table_status(table_name, x),
+            },
+            {
+                "text": "Kosong",
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x="Kosong": self.set_table_status(table_name, x),
+            }
+        ]
+
+        if self.table_options_dropdown and self.table_options_dropdown.menu.parent:
+             self.table_options_dropdown.dismiss()
+
+        self.table_options_dropdown = MDDropdownMenu(
+            caller=caller_button,
+            items=menu_items,
+            width_mult=4,
+        )
+        self.table_options_dropdown.open()
+
+    def set_table_status(self, table_name, new_status):
+        success = db_manager.update_table_status(table_name, new_status)
+        if success:
+            self.tables_data = db_manager.get_all_tables() 
+            self.display_tables() 
+        
+        if self.table_options_dropdown: 
+            self.table_options_dropdown.dismiss()
+
+    def open_add_table_dialog(self):
+        """Membuka dialog untuk menambahkan meja baru."""
+        if not self.add_table_dialog:
+            content = AddTableDialogContent()
+            self.add_table_dialog = MDDialog(
+                title="Tambah Meja Baru",
+                type="custom",
+                content_cls=content,
+                buttons=[
+                    MDFlatButton(text="BATAL", on_release=lambda x: self.add_table_dialog.dismiss()), #type: ignore
+                    MDRaisedButton(text="TAMBAH", on_release=self.submit_new_table_from_dialog),
+                ],
+            )
+        
+        self.add_table_dialog.content_cls.table_name_field.text = ""
+        self.add_table_dialog.content_cls.table_name_field.error = False
+        self.add_table_dialog.content_cls.table_name_field.helper_text = ""
+        self.add_table_dialog.open()
+
+    def submit_new_table_from_dialog(self, *args):
+        """Mengambil data dari dialog dan menambahkan meja baru."""
+        content_cls = self.add_table_dialog.content_cls #type: ignore
+        table_name = content_cls.table_name_field.text.strip()
+
+        if not table_name:
+            content_cls.table_name_field.error = True
+            content_cls.table_name_field.helper_text = "Nama meja tidak boleh kosong."
+            return
+
+        existing_tables = db_manager.get_all_tables()
+        if any(t['name'].lower() == table_name.lower() for t in existing_tables):
+            content_cls.table_name_field.error = True
+            content_cls.table_name_field.helper_text = "Nama meja sudah ada."
+            return
+        
+        new_table_id = db_manager.add_table(table_name, 'Kosong')
+        
+        if new_table_id:
+            self.tables_data = db_manager.get_all_tables() 
+            self.display_tables() 
+            self.add_table_dialog.dismiss() #type: ignore
+        else:
+            content_cls.table_name_field.error = True
+            content_cls.table_name_field.helper_text = "Gagal menambahkan meja ke database."
+
+
+    def open_status_update_dialog(self, table_info_dict):
+        """Membuka dialog untuk memperbarui status meja."""
+        self.selected_table_for_status_update = table_info_dict 
+
+        current_status = table_info_dict['status']
+        dialog_title = f"Update Status: {table_info_dict['name']}"
+        
+        possible_actions = []
+        if current_status == "Kosong":
+            possible_actions.append({"text": "BUAT PESANAN (BELUM BAYAR)", "new_status": "Belum Bayar"})
+        elif current_status == "Belum Bayar":
+            possible_actions.append({"text": "TANDAI SUDAH BAYAR", "new_status": "Sudah Bayar"})
+            possible_actions.append({"text": "BATALKAN PESANAN (JADI KOSONG)", "new_status": "Kosong"})
+        elif current_status == "Sudah Bayar":
+            possible_actions.append({"text": "SIAPKAN MEJA BARU (JADI KOSONG)", "new_status": "Kosong"})
+        
+        dialog_buttons = [MDFlatButton(text="TUTUP", on_release=lambda x: self.status_update_dialog.dismiss())] #type: ignore
+        
+        for action_details in possible_actions:
+            btn = MDRaisedButton(
+                text=action_details["text"],
+                font_size="12sp"
+            )
+            btn.bind(on_release=lambda instance, new_s=action_details["new_status"]: self.confirm_status_update(new_s))
+            dialog_buttons.append(btn)
+        
+        if not self.status_update_dialog:
+            self.status_update_dialog = MDDialog(
+                title=dialog_title,
+                type="confirmation",
+                buttons=dialog_buttons,
+            )
+        else:
+            self.status_update_dialog.title = dialog_title
+            self.status_update_dialog.buttons = dialog_buttons
+
+        self.status_update_dialog.open()
+
+    def confirm_status_update(self, new_status):
+        """Memperbarui status meja yang dipilih di database."""
+        if self.selected_table_for_status_update:
+            table_name_to_update = self.selected_table_for_status_update['name']
+            
+            success = db_manager.update_table_status(table_name_to_update, new_status)
+            
+            if success:
+                self.tables_data = db_manager.get_all_tables()
+                self.display_tables() 
+        
+        if self.status_update_dialog:
+            self.status_update_dialog.dismiss()
+        self.selected_table_for_status_update = None
 
 class Settings(MDScreen):
     pass
