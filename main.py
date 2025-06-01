@@ -21,7 +21,7 @@ import os
 import db_manager
 from kivymd.uix.snackbar import Snackbar
 
-Window.size = (350, 600)
+# Window.size = (350, 600)
 
 class BaseScreen(MDScreen):
     pass
@@ -317,7 +317,7 @@ class AddItemDialogContent(MDBoxLayout):
 
         image_input_layout = MDBoxLayout(orientation='horizontal', adaptive_height=True, spacing=dp(10)) 
         self.image_path_display = MDTextField(
-            hint_text="Pilih Gambar Menu",
+            hint_text="Pilih Gambar",
             mode="fill",
             readonly=True,
             helper_text_mode = "on_focus"
@@ -338,26 +338,46 @@ class AddItemDialogContent(MDBoxLayout):
 
     def open_file_manager(self, *args):
         from kivy.utils import platform
-        if platform == 'android':
-            try:
+        try:
+            if platform == 'android':
                 from android.permissions import request_permissions, Permission #type: ignore
                 def cb(permissions, results):
                     if all(results):
                         from android.storage import primary_external_storage_path #type: ignore
                         path = primary_external_storage_path()
+                        if not os.path.exists(path):
+                            self.show_error_dialog("Folder tidak ditemukan atau tidak dapat diakses.")
+                            return
                         self._show_file_manager(path)
+                    else:
+                        self.show_error_dialog("Izin akses storage ditolak.")
                 request_permissions(
                     [Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE],
                     cb
                 )
                 return
-            except ImportError:
-                pass
-            from android.storage import primary_external_storage_path #type: ignore
-            path = primary_external_storage_path()
-        else:
-            path = os.path.expanduser("~")
-        self._show_file_manager(path)
+            else:
+                path = os.path.expanduser("~")
+                if not os.path.exists(path):
+                    self.show_error_dialog("Folder home tidak ditemukan.")
+                    return
+            self._show_file_manager(path)
+        except Exception as e:
+            self.show_error_dialog(f"Gagal membuka file manager:\n{e}")
+            
+    def show_error_dialog(self, message):
+        dialog = MDDialog(
+            title="Gagal Membuaka File Manager",
+            text=message,
+            size_hint=(0.8, None),
+            height=dp(150),
+            buttons=[
+                MDFlatButton(
+                    text="TUTUP",
+                    on_release=lambda x: dialog.dismiss()
+                )
+            ]
+        )
 
     def _show_file_manager(self, path):
         AddItemDialogContent.file_manager = MDFileManager(
@@ -509,7 +529,7 @@ class AddTableDialogContent(MDBoxLayout):
         self.padding = [dp(24), dp(24), dp(24), dp(24)]
         
         self.table_name_field = MDTextField(
-            hint_text="Nama Meja (e.g., Meja 01)",
+            hint_text="No Meja",
             mode="fill",
             required=True,
             helper_text_mode="on_error"
