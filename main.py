@@ -340,21 +340,27 @@ class AddItemDialogContent(MDBoxLayout):
         from kivy.utils import platform
         try:
             if platform == 'android':
-                from android.permissions import request_permissions, Permission #type: ignore
-                def cb(permissions, results):
-                    if all(results):
-                        from android.storage import primary_external_storage_path #type: ignore
-                        path = primary_external_storage_path()
-                        if not os.path.exists(path):
-                            self.show_error_dialog("Folder tidak ditemukan atau tidak dapat diakses.")
-                            return
-                        self._show_file_manager(path)
-                    else:
-                        self.show_error_dialog("Izin akses storage ditolak.")
-                request_permissions(
-                    [Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE],
-                    cb
-                )
+                from android.permissions import Permission, check_permission, request_permissions # type: ignore
+                def after_permission(*_):
+                    from android.storage import primary_external_storage_path # type: ignore
+                    path = primary_external_storage_path()
+                    if not os.path.exists(path):
+                        self.show_error_dialog("Folder tidak ditemukan atau tidak dapat diakses.")
+                        return
+                    self._show_file_manager(path)
+                # Cek apakah sudah diizinkan
+                if check_permission(Permission.READ_EXTERNAL_STORAGE) and check_permission(Permission.WRITE_EXTERNAL_STORAGE):
+                    after_permission()
+                else:
+                    def cb(permissions, results):
+                        if all(results):
+                            after_permission()
+                        else:
+                            self.show_error_dialog("Izin akses storage ditolak.")
+                    request_permissions(
+                        [Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE],
+                        cb
+                    )
                 return
             else:
                 path = os.path.expanduser("~")
@@ -367,7 +373,7 @@ class AddItemDialogContent(MDBoxLayout):
             
     def show_error_dialog(self, message):
         dialog = MDDialog(
-            title="Gagal Membuaka File Manager",
+            title="Gagal Membuka File Manager",
             text=message,
             size_hint=(0.8, None),
             height=dp(150),
@@ -378,6 +384,7 @@ class AddItemDialogContent(MDBoxLayout):
                 )
             ]
         )
+        dialog.open()
 
     def _show_file_manager(self, path):
         AddItemDialogContent.file_manager = MDFileManager(
@@ -619,7 +626,9 @@ class History(MDScreen):
         self.table_options_dropdown = MDDropdownMenu(
             caller=caller_button,
             items=menu_items,
-            width_mult=4,
+            width_mult=2.5,
+            position="auto",
+            max_height=dp(180),
         )
         self.table_options_dropdown.open()
 
