@@ -1,9 +1,14 @@
-import sqlite3
 import os
-import json
+import sqlite3
 from datetime import datetime
+import json
 
-DATABASE_NAME = "kasir.db"
+from kivy.utils import platform
+if platform == "android":
+    from android.storage import app_storage_path #type: ignore
+    DATABASE_NAME = os.path.join(app_storage_path(), "kasir.db")
+else:
+    DATABASE_NAME = "kasir.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE_NAME)

@@ -584,7 +584,7 @@ class History(MDScreen):
         ]
 
         if self.table_options_dropdown and self.table_options_dropdown.menu.parent:
-             self.table_options_dropdown.dismiss()
+            self.table_options_dropdown.dismiss()
 
         self.table_options_dropdown = MDDropdownMenu(
             caller=caller_button,

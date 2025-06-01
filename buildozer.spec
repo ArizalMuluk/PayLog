@@ -61,7 +61,7 @@ orientation = portrait
 #
 
 #
-# author = © Copyright Info
+author = © arzlfrds 2025
 
 # change the major version of python used by the app
 osx.python_version = 3
@@ -95,7 +95,7 @@ android.presplash_color = #FFFFFF
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+android.permissions = WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE, INTERNET
 
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
