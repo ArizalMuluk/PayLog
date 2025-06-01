@@ -114,13 +114,16 @@ class Cart(MDScreen):
             pay_trigger_button = self.ids.get('pay_trigger_button')
             if pay_trigger_button:
                 pay_trigger_button.disabled = not cart_items_data
-                from kivymd.icon_definitions import md_icons 
                 if not cart_items_data:
-                    pay_trigger_button.text = f"KERANJANG KOSONG   {md_icons['arrow-up']}"
+                    pay_trigger_button.text = "KERANJANG KOSONG"
+                    pay_trigger_button.icon = "cart-off"
                 elif self.payment_panel_visible:
-                    pay_trigger_button.text = f"TUTUP PEMBAYARAN   {md_icons['arrow-down']}"
+                    pay_trigger_button.text = "TUTUP PEMBAYARAN"
+                    pay_trigger_button.icon = "chevron-double-down"
                 else:
-                    pay_trigger_button.text = f"LANJUT KE PEMBAYARAN   {md_icons['arrow-up']}"
+                    pay_trigger_button.text = "LANJUT KE PEMBAYARAN"
+                    pay_trigger_button.icon = "chevron-double-up"
+
 
     def toggle_payment_panel(self):
         panel = self.ids.get('payment_details_panel')
@@ -130,15 +133,16 @@ class Cart(MDScreen):
             return
 
         duration = 0.3
-        from kivymd.icon_definitions import md_icons
 
         if self.payment_panel_visible:
             anim = Animation(height=0, opacity=0, d=duration, t='out_cubic')
-            trigger_button.text = f"LANJUT KE PEMBAYARAN   {md_icons['arrow-up']}"
+            trigger_button.text = "LANJUT KE PEMBAYARAN"
+            trigger_button.icon = "chevron-double-up"
         else:
             target_height = dp(200)
             anim = Animation(height=target_height, opacity=1, d=duration, t='in_out_cubic')
-            trigger_button.text = f"TUTUP PEMBAYARAN   {md_icons['arrow-down']}"
+            trigger_button.text = "TUTUP PEMBAYARAN"
+            trigger_button.icon = "chevron-double-down"
         
         anim.start(panel)
         self.payment_panel_visible = not self.payment_panel_visible

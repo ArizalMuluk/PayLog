@@ -235,15 +235,17 @@
                 padding: dp(12) 
                 md_bg_color: app.theme_cls.primary_color 
 
-        MDRaisedButton: 
+        MDFillRoundFlatIconButton: 
             id: pay_trigger_button
-            text: f"LANJUT KE PEMBAYARAN   {md_icons['arrow-up']}"
+            text: "LANJUT KE PEMBAYARAN"
+            icon: "chevron-double-up"
             font_style: "Button" 
+            font_size: "18sp"
             size_hint_y: None
             height: dp(52) 
             size_hint_x: 1 
             md_bg_color: app.theme_cls.primary_color 
-            on_release: root.toggle_payment_panel() 
+            on_release: root.toggle_payment_panel()
 
 <AddMenu>:
     name: 'Add Menu'
