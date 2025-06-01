@@ -35,7 +35,6 @@
             mode: 'rectangle'
             size_hint_y: None
             height: dp(48)
-            text: app.get_last_outlite_name() if hasattr(app, 'get_last_outlite_name') else ''
 
         MDRaisedButton:
             text: 'Cetak Laporan Keuangan'
@@ -111,7 +110,7 @@
     adaptive_height: True
     size_hint_y: None
     padding: dp(10)
-    spacing: dp(10)
+    spacing: dp(10) 
     md_bg_color: app.theme_cls.bg_light 
 
     FitImage:
@@ -196,7 +195,7 @@
         MDBoxLayout:
             orientation: 'vertical'
             size_hint_y: None
-            adaptive_height: False
+            adaptive_height: False 
             padding: [dp(16), dp(5), dp(16), dp(10)] 
             spacing: dp(2)
 
@@ -204,7 +203,7 @@
                 adaptive_height: False
                 MDLabel:
                     text: "Item"
-                    size_hint_x: 0.8 
+                    size_hint_x: 0.8  
                     halign: 'left'
                 MDLabel:
                     id: total_items_label
@@ -216,7 +215,7 @@
                 adaptive_height: False
                 MDLabel:
                     text: "Total"
-                    size_hint_x: 0.8 
+                    size_hint_x: 0.8  
                     halign: 'left'
                     font_style: "Subtitle1" 
                     bold: True
@@ -234,13 +233,13 @@
             size_hint_y: None
             height: 0
             opacity: 0
-            padding: [dp(16), dp(12), dp(16), dp(16)] 
+            padding: [dp(16), dp(12), dp(16), dp(16)]  
             spacing: dp(12)
 
             MDTextField:
                 id: payment_amount_field
                 hint_text: "Nominal Dibayar"
-                input_filter: "float" 
+                input_filter: "float"  
                 on_text: root.calculate_and_display_change() 
                 size_hint_y: None
                 height: self.minimum_height 
@@ -251,7 +250,7 @@
                 padding: [0, dp(4), 0, dp(4)]
                 MDLabel:
                     text: "Kembalian"
-                    size_hint_x: 0.7 
+                    size_hint_x: 0.7  
                     halign: 'left'
                     theme_text_color: "Secondary"
                 MDLabel:
@@ -263,11 +262,11 @@
                     theme_text_color: "Primary"
             
             MDRaisedButton:
-                id: confirm_payment_button 
+                id: confirm_payment_button  
                 text: "KONFIRMASI PEMBAYARAN"
-                on_release: root.process_payment() 
-                size_hint_x: 1 
-                padding: dp(12) 
+                on_release: root.process_payment()  
+                size_hint_x: 1  
+                padding: dp(12)  
                 md_bg_color: app.theme_cls.primary_color 
 
         MDFillRoundFlatIconButton: 
@@ -276,9 +275,9 @@
             icon: "chevron-double-up"
             font_style: "Button" 
             font_size: "18sp"
-            size_hint_y: None
-            height: dp(52) 
-            size_hint_x: 1 
+            size_hint_y: None 
+            height: dp(52)  
+            size_hint_x: 1  
             md_bg_color: app.theme_cls.primary_color 
             on_release: root.toggle_payment_panel()
 
@@ -360,7 +359,7 @@
         MDBoxLayout: 
             size_hint_y: None
             height: dp(56) 
-            padding: dp(10)
+            padding: dp(10) 
             MDLabel:
                 text: "Histori Pemesanan Meja"
                 halign: 'center'
@@ -371,13 +370,13 @@
 
         ScrollView: 
             MDList:
-                id: history_list 
+                id: history_list  
                 padding: dp(10)
                 spacing: dp(8)
         
     MDFloatingActionButton: 
-        icon: "table-plus" 
-        elevation: 2 
+        icon: "table-plus"  
+        elevation: 2  
         pos_hint: {"center_x": .9, "center_y": .1} 
         on_release: root.open_add_table_dialog()
 

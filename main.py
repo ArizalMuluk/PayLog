@@ -21,7 +21,7 @@ import os
 import db_manager
 from kivymd.uix.snackbar import Snackbar
 
-# Window.size = (350, 600)
+Window.size = (350, 600)
 
 class BaseScreen(MDScreen):
     pass
@@ -45,7 +45,7 @@ class CartListItem(MDBoxLayout):
             self.actual_item_image_path = _image_path
         elif os.path.exists(placeholder_path):
             self.actual_item_image_path = placeholder_path
-        else:
+        else: 
             self.actual_item_image_path = "atlas://data/images/defaulttheme/image-missing" 
 
 
@@ -89,8 +89,8 @@ class Cart(MDScreen):
                     font_style="Subtitle1", adaptive_height=True
                 )
             )
-            if self.payment_panel_visible:
-                self.toggle_payment_panel() # Tutup panel
+            if self.payment_panel_visible: 
+                self.toggle_payment_panel() 
         else:
             for item_data_dict in cart_items_data:
                 cart_item_view = CartListItem(item_data=item_data_dict)
@@ -105,11 +105,11 @@ class Cart(MDScreen):
             if 'total_items_label' in self.ids:
                 self.ids.total_items_label.text = str(total_items_count)
             
-            payment_field = self.ids.get('payment_amount_field')
+            payment_field = self.ids.get('payment_amount_field') 
             if payment_field:
-                payment_field.text = "" 
-            change_label = self.ids.get('change_label')
-            if change_label:
+                payment_field.text = ""  
+            change_label = self.ids.get('change_label') 
+            if change_label: 
                 change_label.text = "Rp0"
 
             pay_trigger_button = self.ids.get('pay_trigger_button')
@@ -118,10 +118,10 @@ class Cart(MDScreen):
                 if not cart_items_data:
                     pay_trigger_button.text = "KERANJANG KOSONG"
                     pay_trigger_button.icon = "cart-off"
-                elif self.payment_panel_visible:
+                elif self.payment_panel_visible: 
                     pay_trigger_button.text = "TUTUP PEMBAYARAN"
                     pay_trigger_button.icon = "chevron-double-down"
-                else:
+                else: 
                     pay_trigger_button.text = "LANJUT KE PEMBAYARAN"
                     pay_trigger_button.icon = "chevron-double-up"
 
@@ -133,7 +133,7 @@ class Cart(MDScreen):
         if not panel or not trigger_button:
             return
 
-        duration = 0.3
+        duration = 0.3 
 
         if self.payment_panel_visible:
             anim = Animation(height=0, opacity=0, d=duration, t='out_cubic')
@@ -213,11 +213,11 @@ class Cart(MDScreen):
         change = payment_amount - total_price
         print(f"Pembayaran Berhasil! Total: {total_price}, Dibayar: {payment_amount}, Kembalian: {change}")
 
-        # Gunakan outlet aktif
+        
         outlet_name = app.get_active_outlet() or "Unknown"
         items = app.get_cart_items_list()
         db_manager.save_sale(outlet_name, items, total_price)
-
+        
         if hasattr(app, 'cart_items'): 
             app.cart_items.clear()
 
@@ -241,7 +241,7 @@ class MenuCard(MDCard):
         if self.image_path and os.path.exists(self.image_path):
             self.actual_image_source = self.image_path
         elif os.path.exists(placeholder):
-            self.actual_image_source = placeholder
+            self.actual_image_source = placeholder 
         else:
             self.actual_image_source = ""
 
@@ -251,7 +251,7 @@ class MenuCard(MDCard):
             return
 
         app.add_item_to_app_cart(self)
-
+        
         try:
             if not self.actual_image_source:
                 return
@@ -259,11 +259,11 @@ class MenuCard(MDCard):
             source_visual_element = self.ids.product_image_in_card
             if not source_visual_element:
                 return
-
+            
             start_pos_abs = source_visual_element.to_window(*source_visual_element.center)
 
             cart_icon_widget = app.root.ids.get('cart_nav_icon_target')
-            if not cart_icon_widget:
+            if not cart_icon_widget: 
                 return
 
             target_pos_abs = cart_icon_widget.to_window(*cart_icon_widget.center)
@@ -279,7 +279,7 @@ class MenuCard(MDCard):
             anim_item.center_x = start_pos_abs[0]
             anim_item.center_y = start_pos_abs[1]
 
-            Window.add_widget(anim_item)
+            Window.add_widget(anim_item) 
 
             duration = 0.5
             anim = Animation(
@@ -290,10 +290,10 @@ class MenuCard(MDCard):
                 t='out_quad',
                 duration=duration
             )
-
+            
             def on_animation_finish(animation, widget_animated):
                 Window.remove_widget(widget_animated)
-
+            
             anim.bind(on_complete=on_animation_finish)
             anim.start(anim_item)
 
@@ -313,9 +313,9 @@ class AddItemDialogContent(MDBoxLayout):
         self.adaptive_height = True
         self.padding = [dp(16), dp(50), dp(16), dp(24)]
 
-        self.name_field = MDTextField(hint_text="Nama Menu", mode="fill", required=True)
+        self.name_field = MDTextField(hint_text="Nama Menu", mode="fill", required=True) 
 
-        image_input_layout = MDBoxLayout(orientation='horizontal', adaptive_height=True, spacing=dp(10))
+        image_input_layout = MDBoxLayout(orientation='horizontal', adaptive_height=True, spacing=dp(10)) 
         self.image_path_display = MDTextField(
             hint_text="Pilih Gambar Menu",
             mode="fill",
@@ -325,7 +325,7 @@ class AddItemDialogContent(MDBoxLayout):
         self.browse_button = MDIconButton(
             icon="folder-open-outline", 
             on_release=self.open_file_manager,
-            pos_hint={'center_y': 0.5}
+            pos_hint={'center_y': 0.5} 
         )
         image_input_layout.add_widget(self.image_path_display)
         image_input_layout.add_widget(self.browse_button)
@@ -339,7 +339,7 @@ class AddItemDialogContent(MDBoxLayout):
     def open_file_manager(self, *args):
         if AddItemDialogContent.manager_open:
             return
-
+        
         from kivy.utils import platform
         if platform == 'android':
             try:
@@ -347,7 +347,7 @@ class AddItemDialogContent(MDBoxLayout):
                 request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
             except ImportError:
                 pass
-
+        
         path = os.path.expanduser("~")
         AddItemDialogContent.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
@@ -355,7 +355,7 @@ class AddItemDialogContent(MDBoxLayout):
             preview=True,
             ext=['.png', '.jpg', '.jpeg', '.gif', '.bmp']
         )
-        AddItemDialogContent.file_manager.show(path)
+        AddItemDialogContent.file_manager.show(path) 
         AddItemDialogContent.manager_open = True
 
     def select_path(self, path: str):
@@ -373,7 +373,7 @@ class AddMenu(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.all_menu_items_from_db = []
-
+    
     def on_enter(self):
         self.load_items_from_db()
         search_input_widget = self.ids.get('search_field')
@@ -381,7 +381,7 @@ class AddMenu(MDScreen):
             self.search_items(search_input_widget.text)
         else:
             self.display_all_items()
-
+    
     def load_items_from_db(self):
         self.all_menu_items_from_db = db_manager.get_all_menu_items()
 
@@ -391,7 +391,7 @@ class AddMenu(MDScreen):
         result_list = self.ids.get('search_result_list')
         if not result_list:
             return
-
+        
         result_list.clear_widgets()
         for item_data in self.all_menu_items_from_db:
             self._create_and_add_card(item_data, result_list)
@@ -399,14 +399,14 @@ class AddMenu(MDScreen):
     def search_items(self, query):
         if not hasattr(self, 'ids') or not self.ids:
             return
-
+        
         result_list = self.ids.get('search_result_list')
         if not result_list:
             return
         result_list.clear_widgets()
         if not query:
             self.display_all_items()
-            return
+            return 
 
         for item_data in self.all_menu_items_from_db:
             if query.lower() in item_data['name'].lower():
@@ -438,7 +438,7 @@ class AddMenu(MDScreen):
                     ),
                 ],
             )
-        dialog_actual_content = self.dialog.content_cls
+        dialog_actual_content = self.dialog.content_cls 
 
         dialog_actual_content.name_field.text = ""
         dialog_actual_content.image_path_display.text = ""
@@ -455,13 +455,13 @@ class AddMenu(MDScreen):
         if not self.dialog:
             print("Error: Dialog tidak ditemukan di submit_new_item_from_dialog")
             return
-
+        
         content = self.dialog.content_cls
 
         name = content.name_field.text
         image_path = content.image_path_display.text
         price_text = content.price_field.text
-
+        
         content.name_field.error = False
         content.price_field.error = False
 
@@ -469,7 +469,7 @@ class AddMenu(MDScreen):
             if not name: content.name_field.error = True
             if not price_text: content.price_field.error = True
             return
-
+        
         try:
             price = float(price_text)
             db_manager.add_menu_item(name, image_path, price)
@@ -480,7 +480,7 @@ class AddMenu(MDScreen):
                 self.search_items(current_search_text)
             else:
                 self.display_all_items()
-
+            
             if self.dialog:
                 self.dialog.dismiss()
         except ValueError:
@@ -496,7 +496,7 @@ class AddTableDialogContent(MDBoxLayout):
         self.size_hint_y = None
         self.adaptive_height = True
         self.padding = [dp(24), dp(24), dp(24), dp(24)]
-
+        
         self.table_name_field = MDTextField(
             hint_text="Nama Meja (e.g., Meja 01)",
             mode="fill",
@@ -506,8 +506,8 @@ class AddTableDialogContent(MDBoxLayout):
         self.add_widget(self.table_name_field)
 
 class TableHistoryListItem(MDBoxLayout):
-    table_data = DictProperty() 
-    history_screen = ObjectProperty() 
+    table_data = DictProperty()  
+    history_screen = ObjectProperty()  
 
     item_name = StringProperty("")
     item_status = StringProperty("")
@@ -523,7 +523,6 @@ class TableHistoryListItem(MDBoxLayout):
         self.item_status = f"Status: {self.table_data.get('status', '')}"
 
     def show_options_menu(self, button_instance):
-        """Dipanggil dari KV saat tombol MDIconButton ditekan."""
         if self.history_screen:
             self.history_screen.open_table_options_menu(self.table_data, button_instance)
 
@@ -531,7 +530,7 @@ class TableHistoryListItem(MDBoxLayout):
 class History(MDScreen):
     add_table_dialog = None
     table_options_dropdown = None 
-    tables_data = ListProperty([])
+    tables_data = ListProperty([]) 
 
     def on_enter(self):
         self.tables_data = db_manager.get_all_tables()
@@ -542,7 +541,7 @@ class History(MDScreen):
         if not history_list_widget:
             return
         
-        history_list_widget.clear_widgets()
+        history_list_widget.clear_widgets() 
 
         if not self.tables_data:
             history_list_widget.add_widget(
@@ -554,7 +553,7 @@ class History(MDScreen):
             )
         else:
             for table_info_original in sorted(self.tables_data, key=lambda x: x['name']):
-                table_info = dict(table_info_original) 
+                table_info = dict(table_info_original)  
                 
                 item = TableHistoryListItem(
                     table_data=table_info,
@@ -582,7 +581,7 @@ class History(MDScreen):
                 "on_release": lambda x="Kosong": self.set_table_status(table_name, x),
             }
         ]
-
+        
         if self.table_options_dropdown and self.table_options_dropdown.menu.parent:
             self.table_options_dropdown.dismiss()
 
@@ -596,20 +595,19 @@ class History(MDScreen):
     def set_table_status(self, table_name, new_status):
         success = db_manager.update_table_status(table_name, new_status)
         if success:
-            self.tables_data = db_manager.get_all_tables() 
-            self.display_tables() 
+            self.tables_data = db_manager.get_all_tables()  
+            self.display_tables()  
         
         if self.table_options_dropdown: 
             self.table_options_dropdown.dismiss()
 
     def open_add_table_dialog(self):
-        """Membuka dialog untuk menambahkan meja baru."""
         if not self.add_table_dialog:
             content = AddTableDialogContent()
             self.add_table_dialog = MDDialog(
                 title="Tambah Meja Baru",
                 type="custom",
-                content_cls=content,
+                content_cls=content, 
                 buttons=[
                     MDFlatButton(text="BATAL", on_release=lambda x: self.add_table_dialog.dismiss()), #type: ignore
                     MDRaisedButton(text="TAMBAH", on_release=self.submit_new_table_from_dialog),
@@ -622,9 +620,8 @@ class History(MDScreen):
         self.add_table_dialog.open()
 
     def submit_new_table_from_dialog(self, *args):
-        """Mengambil data dari dialog dan menambahkan meja baru."""
         content_cls = self.add_table_dialog.content_cls #type: ignore
-        table_name = content_cls.table_name_field.text.strip()
+        table_name = content_cls.table_name_field.text.strip() 
 
         if not table_name:
             content_cls.table_name_field.error = True
@@ -640,20 +637,19 @@ class History(MDScreen):
         new_table_id = db_manager.add_table(table_name, 'Kosong')
         
         if new_table_id:
-            self.tables_data = db_manager.get_all_tables() 
-            self.display_tables() 
+            self.tables_data = db_manager.get_all_tables()  
+            self.display_tables()  
             self.add_table_dialog.dismiss() #type: ignore
         else:
             content_cls.table_name_field.error = True
             content_cls.table_name_field.helper_text = "Gagal menambahkan meja ke database."
 
-
+    
     def open_status_update_dialog(self, table_info_dict):
-        """Membuka dialog untuk memperbarui status meja."""
-        self.selected_table_for_status_update = table_info_dict 
+        self.selected_table_for_status_update = table_info_dict  
 
         current_status = table_info_dict['status']
-        dialog_title = f"Update Status: {table_info_dict['name']}"
+        dialog_title = f"Update Status: {table_info_dict['name']}" 
         
         possible_actions = []
         if current_status == "Kosong":
@@ -664,7 +660,7 @@ class History(MDScreen):
         elif current_status == "Sudah Bayar":
             possible_actions.append({"text": "SIAPKAN MEJA BARU (JADI KOSONG)", "new_status": "Kosong"})
         
-        dialog_buttons = [MDFlatButton(text="TUTUP", on_release=lambda x: self.status_update_dialog.dismiss())] #type: ignore
+        dialog_buttons = [MDFlatButton(text="TUTUP", on_release=lambda x: self.status_update_dialog.dismiss())] #type: ignore 
         
         for action_details in possible_actions:
             btn = MDRaisedButton(
@@ -687,7 +683,6 @@ class History(MDScreen):
         self.status_update_dialog.open()
 
     def confirm_status_update(self, new_status):
-        """Memperbarui status meja yang dipilih di database."""
         if self.selected_table_for_status_update:
             table_name_to_update = self.selected_table_for_status_update['name']
             
@@ -695,7 +690,7 @@ class History(MDScreen):
             
             if success:
                 self.tables_data = db_manager.get_all_tables()
-                self.display_tables() 
+                self.display_tables()  
         
         if self.status_update_dialog:
             self.status_update_dialog.dismiss()
@@ -707,8 +702,9 @@ class Setting(MDScreen):
 class MainApp(MDApp):
     root = None
     current_active = StringProperty("Add Menu")
-    cart_items = {}
-    active_outlet = StringProperty("")  # Tambahkan properti ini
+    cart_items = {} 
+    active_outlet = StringProperty("")
+    last_outlet_name = StringProperty("")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -754,6 +750,14 @@ class MainApp(MDApp):
 
     def on_start(self):
         db_manager.init_db()
+        outlet = db_manager.get_last_outlet()
+        if outlet:
+            self.active_outlet = outlet['name']
+            self.last_outlet_name = outlet['name']
+        else:
+            self.active_outlet = "Default Outlet"
+            self.last_outlet_name = "Default Outlet"
+
         if self.root:
             screen_manager = self.root.ids.get('screen_manager')
             if screen_manager:
@@ -812,7 +816,7 @@ class MainApp(MDApp):
         return
 
     def events(self, window, key, *args):
-        if key == 27: # Android back button
+        if key == 27: 
             if AddMenu.dialog and hasattr(AddMenu.dialog.content_cls, 'manager_open') and AddMenu.dialog.content_cls.manager_open:
                 if hasattr(AddMenu.dialog.content_cls, 'file_manager') and AddMenu.dialog.content_cls.file_manager:
                     AddMenu.dialog.content_cls.file_manager.back()
@@ -822,9 +826,9 @@ class MainApp(MDApp):
                 return True
         return False
 
-    def get_last_outlite_name(self):
+    def get_last_outlet_name(self):
         import db_manager
-        outlet = db_manager.get_last_outlite()
+        outlet = db_manager.get_last_outlet()
         return outlet['name'] if outlet else ''
 
     def show_snackbar(self, message):
@@ -843,7 +847,7 @@ class MainApp(MDApp):
             if not outlet_name.strip():
                 self.show_snackbar('Nama outlet harus diisi!')
                 return
-            db_manager.save_outlite(outlet_name.strip())
+            db_manager.save_outlet(outlet_name.strip())
             sales = db_manager.get_all_sales()
             if not sales:
                 self.show_snackbar('Belum ada data penjualan!')
@@ -901,10 +905,9 @@ class MainApp(MDApp):
             self.show_dialog('Error', f'Gagal ekspor laporan: {e}')
             
     def get_active_outlet(self):
-        # Ambil dari property jika sudah ada, jika belum ambil dari database
         if not self.active_outlet:
             import db_manager
-            outlet = db_manager.get_last_outlite()
+            outlet = db_manager.get_last_outlet()
             if outlet:
                 self.active_outlet = outlet['name']
         return self.active_outlet

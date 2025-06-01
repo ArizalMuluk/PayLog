@@ -53,7 +53,7 @@ def init_db():
 
     # Tambah tabel outlite
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS outlite (
+        CREATE TABLE IF NOT EXISTS outlet (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             created_at TEXT NOT NULL
@@ -197,12 +197,12 @@ def get_all_sales():
         sales.append(item)
     return sales
 
-def save_outlite(name):
+def save_outlet(name):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute('''
-            INSERT INTO outlite (name, created_at)
+            INSERT INTO outlet (name, created_at)
             VALUES (?, ?)
         ''', (name, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         conn.commit()
@@ -213,10 +213,10 @@ def save_outlite(name):
     finally:
         conn.close()
 
-def get_last_outlite():
+def get_last_outlet():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM outlite ORDER BY id DESC LIMIT 1')
+    cursor.execute('SELECT * FROM outlet ORDER BY id DESC LIMIT 1')
     row = cursor.fetchone()
     conn.close()
     return dict(row) if row else None
