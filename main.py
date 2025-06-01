@@ -337,25 +337,36 @@ class AddItemDialogContent(MDBoxLayout):
         self.add_widget(self.price_field)
 
     def open_file_manager(self, *args):
-        if AddItemDialogContent.manager_open:
-            return
-        
         from kivy.utils import platform
         if platform == 'android':
             try:
                 from android.permissions import request_permissions, Permission #type: ignore
-                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+                def cb(permissions, results):
+                    if all(results):
+                        from android.storage import primary_external_storage_path #type: ignore
+                        path = primary_external_storage_path()
+                        self._show_file_manager(path)
+                request_permissions(
+                    [Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE],
+                    cb
+                )
+                return
             except ImportError:
                 pass
-        
-        path = os.path.expanduser("~")
+            from android.storage import primary_external_storage_path #type: ignore
+            path = primary_external_storage_path()
+        else:
+            path = os.path.expanduser("~")
+        self._show_file_manager(path)
+
+    def _show_file_manager(self, path):
         AddItemDialogContent.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.select_path,
             preview=True,
             ext=['.png', '.jpg', '.jpeg', '.gif', '.bmp']
         )
-        AddItemDialogContent.file_manager.show(path) 
+        AddItemDialogContent.file_manager.show(path)
         AddItemDialogContent.manager_open = True
 
     def select_path(self, path: str):
