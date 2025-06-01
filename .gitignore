@@ -1,3 +1,5 @@
 env/
 __pycache__/
 kasir.db
+.buildozer/
+bin/

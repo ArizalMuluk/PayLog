@@ -13,6 +13,41 @@
         text: root.name
         halign: 'center'
 
+<Setting>:
+    name: 'Settings'
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: dp(16)
+        spacing: dp(16)
+
+        MDLabel:
+            text: 'Pengaturan & Laporan'
+            font_style: 'H5'
+            halign: 'center'
+            size_hint_y: None
+            height: dp(48)
+
+        MDTextField:
+            id: outlet_name_field
+            hint_text: 'Nama Outlet'
+            helper_text: 'Masukkan nama outlet sebelum mencetak laporan'
+            helper_text_mode: 'on_focus'
+            mode: 'rectangle'
+            size_hint_y: None
+            height: dp(48)
+            text: app.get_last_outlite_name() if hasattr(app, 'get_last_outlite_name') else ''
+
+        MDRaisedButton:
+            text: 'Cetak Laporan Keuangan'
+            icon: 'file-excel'
+            md_bg_color: app.theme_cls.primary_color
+            on_release: app.export_sales_report_to_excel(outlet_name_field.text)
+            size_hint_y: None
+            height: dp(48)
+
+        Widget:
+            size_hint_y: 1
+
 <MenuCard>:
     name: ""
     image_path: ""
@@ -361,8 +396,7 @@ MDBoxLayout:
             
         History:
             
-        BaseScreen:
-            name: 'Settings'
+        Setting:
 
     BoxLayout:
         id: bottom_nav_container

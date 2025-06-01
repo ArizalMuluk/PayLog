@@ -19,8 +19,9 @@ from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.button import MDFlatButton, MDRaisedButton, MDIconButton
 import os
 import db_manager
+from kivymd.uix.snackbar import Snackbar
 
-Window.size = (350, 600)
+# Window.size = (350, 600)
 
 class BaseScreen(MDScreen):
     pass
@@ -211,6 +212,11 @@ class Cart(MDScreen):
         
         change = payment_amount - total_price
         print(f"Pembayaran Berhasil! Total: {total_price}, Dibayar: {payment_amount}, Kembalian: {change}")
+
+        # Gunakan outlet aktif
+        outlet_name = app.get_active_outlet() or "Unknown"
+        items = app.get_cart_items_list()
+        db_manager.save_sale(outlet_name, items, total_price)
 
         if hasattr(app, 'cart_items'): 
             app.cart_items.clear()
@@ -695,13 +701,14 @@ class History(MDScreen):
             self.status_update_dialog.dismiss()
         self.selected_table_for_status_update = None
 
-class Settings(MDScreen):
+class Setting(MDScreen):
     pass
 
 class MainApp(MDApp):
     root = None
     current_active = StringProperty("Add Menu")
     cart_items = {}
+    active_outlet = StringProperty("")  # Tambahkan properti ini
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -815,5 +822,92 @@ class MainApp(MDApp):
                 return True
         return False
 
-if __name__ == '__main__':
+    def get_last_outlite_name(self):
+        import db_manager
+        outlet = db_manager.get_last_outlite()
+        return outlet['name'] if outlet else ''
+
+    def show_snackbar(self, message):
+        Snackbar(text=message, duration=2).open()
+
+    def show_dialog(self, title, text):
+        dialog = MDDialog(title=title, text=text, size_hint=(0.8, None), height=dp(150))
+        dialog.open()
+
+    def export_sales_report_to_excel(self, outlet_name):
+        from kivy.utils import platform
+        import db_manager
+        import os
+        from datetime import datetime
+        try:
+            if not outlet_name.strip():
+                self.show_snackbar('Nama outlet harus diisi!')
+                return
+            db_manager.save_outlite(outlet_name.strip())
+            sales = db_manager.get_all_sales()
+            if not sales:
+                self.show_snackbar('Belum ada data penjualan!')
+                return
+            from openpyxl import Workbook
+            wb = Workbook()
+            ws = wb.active
+            if ws is not None:
+                ws.title = 'Laporan Penjualan'
+                ws.append(['Tanggal', 'Outlet', 'Item', 'Qty', 'Harga Satuan', 'Subtotal', 'Total'])
+                for sale in sales:
+                    for item in sale['items']:
+                        ws.append([
+                            sale['date'],
+                            sale['outlet_name'],
+                            item['name'],
+                            item['quantity'],
+                            item['price'],
+                            item['price'] * item['quantity'],
+                            sale['total']
+                        ])
+            else:
+                self.show_dialog('Gagal', 'Gagal membuat worksheet Excel.')
+                return
+            filename = f"LaporanPenjualan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            if platform == 'android':
+                from android.storage import primary_external_storage_path # type: ignore
+                download_dir = os.path.join(primary_external_storage_path(), 'Download')
+            else:
+                download_dir = os.path.expanduser('~/Download')
+            if not os.path.exists(download_dir):
+                os.makedirs(download_dir)
+            file_path = os.path.join(download_dir, filename)
+            try:
+                wb.save(file_path)
+                print(f"[DEBUG] File berhasil disimpan di: {file_path}")
+                self.show_dialog('Sukses', f'Laporan berhasil disimpan:\n{file_path}')
+            except Exception as e:
+                print(f"[ERROR] Gagal menyimpan file: {e}")
+                self.show_dialog('Error', f'Gagal menyimpan file: {e}')
+            if platform == 'android':
+                from jnius import autoclass # type: ignore
+                PythonActivity = autoclass('org.kivy.android.PythonActivity')
+                Intent = autoclass('android.content.Intent')
+                Uri = autoclass('android.net.Uri')
+                File = autoclass('java.io.File')
+                context = PythonActivity.mActivity
+                file = File(file_path)
+                uri = Uri.fromFile(file)
+                intent = Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(uri, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                context.startActivity(intent)
+        except Exception as e:
+            self.show_dialog('Error', f'Gagal ekspor laporan: {e}')
+            
+    def get_active_outlet(self):
+        # Ambil dari property jika sudah ada, jika belum ambil dari database
+        if not self.active_outlet:
+            import db_manager
+            outlet = db_manager.get_last_outlite()
+            if outlet:
+                self.active_outlet = outlet['name']
+        return self.active_outlet
+
+if __name__ == "__main__":
     MainApp().run()

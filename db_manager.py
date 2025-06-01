@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import json
+from datetime import datetime
 
 DATABASE_NAME = "kasir.db"
 
@@ -30,6 +32,26 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE NOT NULL,
             status TEXT NOT NULL 
+        )
+    ''')
+
+    # Tambah tabel sales
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sales (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            outlet_name TEXT NOT NULL,
+            items TEXT NOT NULL,
+            total REAL NOT NULL
+        )
+    ''')
+
+    # Tambah tabel outlite
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS outlite (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TEXT NOT NULL
         )
     ''')
     
@@ -135,6 +157,64 @@ def delete_table(name: str):
         return False
     finally:
         conn.close()
+
+def save_sale(outlet_name, items, total):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO sales (date, outlet_name, items, total)
+            VALUES (?, ?, ?, ?)
+        ''', (
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            outlet_name,
+            json.dumps(items),
+            total
+        ))
+        conn.commit()
+        return cursor.lastrowid
+    except Exception as e:
+        print(f"[ERROR]: Gagal menyimpan transaksi: {e}")
+        return None
+    finally:
+        conn.close()
+
+def get_all_sales():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM sales ORDER BY date DESC')
+    rows = cursor.fetchall()
+    conn.close()
+    sales = []
+    for row in rows:
+        item = dict(row)
+        item['items'] = json.loads(item['items'])
+        sales.append(item)
+    return sales
+
+def save_outlite(name):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO outlite (name, created_at)
+            VALUES (?, ?)
+        ''', (name, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        conn.commit()
+        return cursor.lastrowid
+    except Exception as e:
+        print(f"[ERROR]: Gagal menyimpan outlet: {e}")
+        return None
+    finally:
+        conn.close()
+
+def get_last_outlite():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM outlite ORDER BY id DESC LIMIT 1')
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
 
 if __name__ == "__main__":
     if os.path.exists(DATABASE_NAME):
