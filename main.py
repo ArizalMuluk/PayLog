@@ -627,7 +627,7 @@ class History(MDScreen):
             caller=caller_button,
             items=menu_items,
             width_mult=2.5,
-            position="auto",
+            position="center",
             max_height=dp(180),
         )
         self.table_options_dropdown.open()
