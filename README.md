@@ -27,7 +27,7 @@
 
 1. **Clone this repository:**
    ```sh
-   git clone https://github.com/ArizalMuluk/paylog.git
+   git clone https://github.com/yourusername/paylog.git
    cd paylog
    ```
 
