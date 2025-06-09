@@ -58,16 +58,17 @@
     padding: dp(0)
     size_hint_y: None
     height: self.minimum_height
-    elevation: 2
+    elevation: 4
     radius: [dp(15), dp(15), dp(15), dp(15)]
+    md_bg_color: app.theme_cls.bg_light
 
     FitImage:
         id: product_image_in_card
         source: root.actual_image_source
         size_hint_y: None
-        height: dp(100)
+        height: dp(120)
         radius: [dp(15), dp(15), dp(0), dp(0)]
-        allow_stretch: False
+        allow_stretch: True
         keep_ratio: True
         mipmap: True
 
@@ -75,8 +76,8 @@
         orientation: 'vertical'
         size_hint_y: None
         height: self.minimum_height
-        padding: [dp(10), dp(4), dp(10), dp(10)]
-        spacing: dp(4)
+        padding: [dp(12), dp(8), dp(12), dp(12)]
+        spacing: dp(6)
 
         MDLabel:
             text: root.name
@@ -92,8 +93,9 @@
             MDLabel:
                 text: f"Rp {root.price:,.0f}".replace(",", ".")
                 halign: "left"
-                theme_text_color: "Secondary"
+                theme_text_color: "Primary"
                 font_style: "Body1"
+                bold: True
                 adaptive_height: True
                 size_hint_x: 0.75
                 pos_hint: {"center_y": .5}
@@ -103,26 +105,31 @@
                 theme_text_color: "Custom"
                 text_color: app.theme_cls.primary_color
                 pos_hint: {"center_y": .5}
-                user_font_size: "24sp"
+                user_font_size: "28sp"
 
 <CartListItem>:
     orientation: 'horizontal'
     adaptive_height: True
     size_hint_y: None
-    padding: dp(10)
-    spacing: dp(10) 
-    md_bg_color: app.theme_cls.bg_light 
+    padding: dp(12)
+    spacing: dp(12)
+    md_bg_color: app.theme_cls.bg_light
+    radius: [dp(8)]
+    elevation: 2
 
     FitImage:
         source: root.actual_item_image_path
         size_hint: None, None
-        size: dp(72), dp(72)
-        radius: [dp(4)]
+        size: dp(80), dp(80)
+        radius: [dp(8)]
+        allow_stretch: True
+        keep_ratio: True
 
     MDBoxLayout:
         orientation: 'vertical'
         adaptive_height: True
-        spacing: dp(4)
+        spacing: dp(6)
+        size_hint_x: 0.7
 
         MDLabel:
             text: root.item_name
@@ -134,8 +141,9 @@
             
         MDLabel:
             text: f"Rp. {root.item_price:,.0f}".replace(",", ".")
-            theme_text_color: "Secondary"
-            font_style: "Body2"
+            theme_text_color: "Primary"
+            font_style: "Body1"
+            bold: True
             adaptive_height: True
 
         MDBoxLayout:
@@ -149,6 +157,8 @@
                 icon: "plus-box"
                 on_release: root.increment_quantity()
                 pos_hint: {'center_y': .5}
+                theme_text_color: "Primary"
+                user_font_size: "24sp"
 
             MDLabel:
                 text: str(root.item_quantity)
@@ -157,27 +167,33 @@
                 bold: True
                 adaptive_height: True
                 size_hint_x: None
-                width: dp(28)
+                width: dp(32)
                 pos_hint: {'center_y': .5}
 
             MDIconButton:
                 icon: "minus-box"
                 on_release: root.decrement_quantity()
                 pos_hint: {'center_y': .5}
+                theme_text_color: "Primary"
+                user_font_size: "24sp"
 
 <Cart>:
     name: 'Cart'
     MDBoxLayout:
         orientation: 'vertical'
+        md_bg_color: app.theme_cls.bg_normal
 
         MDBoxLayout:
             size_hint_y: None
             height: dp(56)
-            padding: dp(10)
+            padding: dp(16)
+            md_bg_color: app.theme_cls.primary_color
             MDLabel:
                 text: "Keranjang Belanja"
                 halign: 'center'
                 font_style: 'H5'
+                theme_text_color: "Custom"
+                text_color: [1, 1, 1, 1]
                 adaptive_height: True
 
         ScrollView:
@@ -186,8 +202,8 @@
                 id: cart_items_list
                 orientation: 'vertical'
                 adaptive_height: True
-                padding: dp(8) 
-                spacing: dp(8) 
+                padding: dp(16) 
+                spacing: dp(12) 
 
         MDSeparator:
             height: dp(1)
@@ -196,29 +212,33 @@
             orientation: 'vertical'
             size_hint_y: None
             adaptive_height: True
-            padding: [dp(16), dp(5), dp(16), dp(10)] 
-            spacing: dp(2)
+            padding: [dp(16), dp(12), dp(16), dp(16)] 
+            spacing: dp(8)
+            md_bg_color: app.theme_cls.bg_light
 
             MDBoxLayout: 
                 adaptive_height: True
                 MDLabel:
-                    text: "Item"
+                    text: "Total Item"
                     size_hint_x: 0.8  
                     halign: 'left'
+                    theme_text_color: "Secondary"
                 MDLabel:
                     id: total_items_label
                     text: "0"
                     halign: 'right'
                     bold: True
+                    theme_text_color: "Primary"
 
             MDBoxLayout:
                 adaptive_height: True
                 MDLabel:
-                    text: "Total"
+                    text: "Total Pembayaran"
                     size_hint_x: 0.8  
                     halign: 'left'
                     font_style: "Subtitle1" 
                     bold: True
+                    theme_text_color: "Primary"
                 MDLabel:
                     id: total_price_label
                     text: "Rp0"
@@ -227,59 +247,65 @@
                     bold: True
                     theme_text_color: "Primary"
 
+        MDRaisedButton:
+            id: pay_trigger_button
+            text: "LANJUT KE PEMBAYARAN"
+            icon: "chevron-double-up"
+            size_hint_y: None
+            height: dp(56)
+            md_bg_color: app.theme_cls.primary_color
+            on_release: root.toggle_payment_panel()
+
         MDBoxLayout:
             id: payment_details_panel
             orientation: 'vertical'
             size_hint_y: None
             height: 0
             opacity: 0
-            padding: [dp(16), dp(12), dp(16), dp(16)]  
-            spacing: dp(12)
+            padding: [dp(16), dp(16), dp(16), dp(16)]  
+            spacing: dp(16)
+            md_bg_color: app.theme_cls.bg_light
 
             MDTextField:
                 id: payment_amount_field
                 hint_text: "Nominal Dibayar"
-                input_filter: "float"  
-                on_text: root.calculate_and_display_change() 
+                input_filter: "float"
+                mode: "rectangle"
+                helper_text: "Masukkan jumlah pembayaran"
+                helper_text_mode: "on_error"
+                on_text: root.calculate_and_display_change()
                 size_hint_y: None
-                height: self.minimum_height 
+                height: self.minimum_height
 
             MDBoxLayout:
                 adaptive_height: True
-                size_hint_y: None 
-                padding: [0, dp(4), 0, dp(4)]
+                size_hint_y: None
+                padding: [0, dp(8), 0, dp(8)]
+                spacing: dp(8)
+
                 MDLabel:
                     text: "Kembalian"
-                    size_hint_x: 0.7  
                     halign: 'left'
                     theme_text_color: "Secondary"
+                    font_style: "Subtitle1"
+                    size_hint_x: 0.5
+
                 MDLabel:
                     id: change_label
-                    text: "Rp0" 
+                    text: "Rp0"
                     halign: 'right'
-                    font_style: "Subtitle1" 
-                    bold: True
                     theme_text_color: "Primary"
-            
-            MDRaisedButton:
-                id: confirm_payment_button  
-                text: "KONFIRMASI PEMBAYARAN"
-                on_release: root.process_payment()  
-                size_hint_x: 1  
-                padding: dp(12)  
-                md_bg_color: app.theme_cls.primary_color 
+                    font_style: "Subtitle1"
+                    bold: True
+                    size_hint_x: 0.5
 
-        MDFillRoundFlatIconButton: 
-            id: pay_trigger_button
-            text: "LANJUT KE PEMBAYARAN"
-            icon: "chevron-double-up"
-            font_style: "Button" 
-            font_size: "18sp"
-            size_hint_y: None 
-            height: dp(52)  
-            size_hint_x: 1  
-            md_bg_color: app.theme_cls.primary_color 
-            on_release: root.toggle_payment_panel()
+            MDRaisedButton:
+                text: "PROSES PEMBAYARAN"
+                icon: "cash-register"
+                size_hint_y: None
+                height: dp(48)
+                md_bg_color: app.theme_cls.primary_color
+                on_release: root.process_payment()
 
 <AddMenu>:
     name: 'Add Menu'
