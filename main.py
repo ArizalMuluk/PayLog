@@ -21,7 +21,7 @@ import os
 import db_manager
 from kivymd.uix.snackbar import Snackbar
 
-# Window.size = (350, 600)
+Window.size = (350, 600)
 
 class BaseScreen(MDScreen):
     pass
@@ -160,24 +160,34 @@ class Cart(MDScreen):
         if not (payment_amount_field and change_label):
             return
 
-        payment_amount_text = payment_amount_field.text
+        payment_amount_text = payment_amount_field.text.strip()
         if not payment_amount_text:
             change_label.text = "Rp0"
+            payment_amount_field.error = False
+            payment_amount_field.helper_text = ""
             return
 
         try:
-            payment_amount = float(payment_amount_text)
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = False
-        except ValueError:
+            payment_amount = float(payment_amount_text.replace(".", "").replace(",", "."))
+            if payment_amount < 0:
+                raise ValueError("Jumlah pembayaran tidak boleh negatif")
+                
+            if hasattr(payment_amount_field, 'error'): 
+                payment_amount_field.error = False
+                payment_amount_field.helper_text = ""
+                
+            if payment_amount >= total_price:
+                change = payment_amount - total_price
+                change_label.text = f"Rp{change:,.0f}".replace(",", ".")
+            else:
+                change_label.text = "Rp0"
+                payment_amount_field.error = True
+                payment_amount_field.helper_text = "Jumlah pembayaran kurang dari total"
+                
+        except ValueError as e:
             change_label.text = "Input tidak valid"
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
-            return
-
-        if payment_amount >= total_price:
-            change = payment_amount - total_price
-            change_label.text = f"Rp{change:,.0f}".replace(",", ".")
-        else:
-            change_label.text = "Rp0"
+            payment_amount_field.error = True
+            payment_amount_field.helper_text = str(e) if str(e) != "could not convert string to float: ''" else "Input harus angka"
 
     def process_payment(self):
         app = MDApp.get_running_app()
@@ -190,40 +200,51 @@ class Cart(MDScreen):
         if not payment_amount_field:
             return
 
-        payment_amount_text = payment_amount_field.text
+        payment_amount_text = payment_amount_field.text.strip()
         if not payment_amount_text:
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
-            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Nominal tidak boleh kosong"
+            payment_amount_field.error = True
+            payment_amount_field.helper_text = "Nominal tidak boleh kosong"
             return
         
         try:
-            payment_amount = float(payment_amount_text)
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = False
-            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "" 
-        except ValueError:
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
-            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Input harus angka"
+            payment_amount = float(payment_amount_text.replace(".", "").replace(",", "."))
+            if payment_amount < 0:
+                raise ValueError("Jumlah pembayaran tidak boleh negatif")
+                
+            payment_amount_field.error = False
+            payment_amount_field.helper_text = ""
+            
+        except ValueError as e:
+            payment_amount_field.error = True
+            payment_amount_field.helper_text = str(e) if str(e) != "could not convert string to float: ''" else "Input harus angka"
             return
 
         if payment_amount < total_price:
-            if hasattr(payment_amount_field, 'error'): payment_amount_field.error = True
-            if hasattr(payment_amount_field, 'helper_text'): payment_amount_field.helper_text = "Jumlah pembayaran kurang dari total"
+            payment_amount_field.error = True
+            payment_amount_field.helper_text = "Jumlah pembayaran kurang dari total"
             return
         
         change = payment_amount - total_price
         print(f"Pembayaran Berhasil! Total: {total_price}, Dibayar: {payment_amount}, Kembalian: {change}")
 
-        
-        outlet_name = app.get_active_outlet() or "Unknown"
-        items = app.get_cart_items_list()
-        db_manager.save_sale(outlet_name, items, total_price)
-        
-        if hasattr(app, 'cart_items'): 
-            app.cart_items.clear()
+        try:
+            outlet_name = app.get_active_outlet() or "Unknown"
+            items = app.get_cart_items_list()
+            db_manager.save_sale(outlet_name, items, total_price)
+            
+            if hasattr(app, 'cart_items'): 
+                app.cart_items.clear()
 
-        if self.payment_panel_visible:
-            self.toggle_payment_panel()
-        self.update_cart_display() 
+            if self.payment_panel_visible:
+                self.toggle_payment_panel()
+            self.update_cart_display()
+            
+            # Show success message
+            app.show_snackbar("Pembayaran berhasil diproses!")
+            
+        except Exception as e:
+            print(f"Error saving sale: {str(e)}")
+            app.show_snackbar("Terjadi kesalahan saat menyimpan transaksi")
 
 class MenuCard(MDCard):
     name = StringProperty()
