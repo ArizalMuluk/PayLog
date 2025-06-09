@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/logo1.png" alt="PayLog Logo" width="120"/>
+  <img src="images/logo.png" alt="PayLog Logo" width="120"/>
 </p>
 
 <h1 align="center">PayLog</h1>
