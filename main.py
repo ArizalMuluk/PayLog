@@ -907,7 +907,7 @@ class MainApp(MDApp):
                     for item in sale['items']:
                         ws.append([
                             sale['date'],
-                            sale['outlet_name'],
+                            outlet_name,
                             item['name'],
                             item['quantity'],
                             item['price'],
