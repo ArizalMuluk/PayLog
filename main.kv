@@ -197,6 +197,7 @@
                 adaptive_height: True
 
         ScrollView:
+            id: cart_items_scrollview
             size_hint_y: 1 
             MDBoxLayout:
                 id: cart_items_list
@@ -409,6 +410,7 @@
 MDBoxLayout:
     orientation: 'vertical'
     md_bg_color: app.theme_cls.bg_light
+    softinput_mode: 'pan'
 
     MDScreenManager:
         id: screen_manager

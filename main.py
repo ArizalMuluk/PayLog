@@ -129,7 +129,8 @@ class Cart(MDScreen):
     def toggle_payment_panel(self):
         panel = self.ids.get('payment_details_panel')
         trigger_button = self.ids.get('pay_trigger_button')
-        
+        scrollview = self.parent.ids.get('cart_items_scrollview') if self.parent and hasattr(self.parent, 'ids') else None
+
         if not panel or not trigger_button:
             return
 
@@ -144,7 +145,11 @@ class Cart(MDScreen):
             anim = Animation(height=target_height, opacity=1, d=duration, t='in_out_cubic')
             trigger_button.text = "TUTUP PEMBAYARAN"
             trigger_button.icon = "chevron-double-down"
-        
+            # Scroll ke bawah agar panel pembayaran terlihat
+            if scrollview:
+                def scroll_to_panel(*_):
+                    scrollview.scroll_y = 0
+                anim.bind(on_complete=lambda *_: scroll_to_panel())
         anim.start(panel)
         self.payment_panel_visible = not self.payment_panel_visible
 
@@ -923,7 +928,7 @@ class MainApp(MDApp):
                     for item in sale['items']:
                         ws.append([
                             sale['date'],
-                            sale['outlet_name'],
+                            outlet_name,
                             item['name'],
                             item['quantity'],
                             item['price'],
@@ -963,7 +968,7 @@ class MainApp(MDApp):
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 context.startActivity(intent)
         except Exception as e:
-            self.show_dialog('Error', f'Gagal ekspor laporan: {e}')
+            print(f"[ERROR] Gagal mengekspor laporan penjualan: {e}")
             
     def get_active_outlet(self):
         if not self.active_outlet:
